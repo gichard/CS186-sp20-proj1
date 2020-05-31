@@ -3,49 +3,69 @@ DROP VIEW IF EXISTS q0, q1i, q1ii, q1iii, q1iv, q2i, q2ii, q2iii, q3i, q3ii, q3i
 -- Question 0
 CREATE VIEW q0(era) 
 AS
-  SELECT 1 -- replace this line
+  SELECT MAX(era) FROM pitching
 ;
 
 -- Question 1i
 CREATE VIEW q1i(namefirst, namelast, birthyear)
 AS
-  SELECT 1, 1, 1 -- replace this line
+  SELECT namefirst, namelast, birthyear FROM people
+  WHERE weight > 300
 ;
 
 -- Question 1ii
 CREATE VIEW q1ii(namefirst, namelast, birthyear)
 AS
-  SELECT 1, 1, 1 -- replace this line
+  SELECT namefirst, namelast, birthyear FROM people
+  WHERE namefirst LIKE '% %'
 ;
 
 -- Question 1iii
 CREATE VIEW q1iii(birthyear, avgheight, count)
 AS
-  SELECT 1, 1, 1 -- replace this line
+  SELECT birthyear, AVG(height), COUNT(playerid) FROM people
+  GROUP BY birthyear
+  ORDER BY birthyear
 ;
 
 -- Question 1iv
 CREATE VIEW q1iv(birthyear, avgheight, count)
 AS
-  SELECT 1, 1, 1 -- replace this line
+  SELECT * FROM q1iii
+  WHERE avgheight > 70
+  ORDER BY birthyear
 ;
 
 -- Question 2i
 CREATE VIEW q2i(namefirst, namelast, playerid, yearid)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  SELECT namefirst, namelast, h.playerid, h.yearid
+  FROM halloffame AS h INNER JOIN people AS p
+  ON h.playerid = p.playerid
+  WHERE inducted = 'Y'
+  ORDER BY h.yearid DESC
 ;
 
 -- Question 2ii
 CREATE VIEW q2ii(namefirst, namelast, playerid, schoolid, yearid)
 AS
-  SELECT 1, 1, 1, 1, 1 -- replace this line
+  SELECT namefirst, namelast, h.playerid, cp.schoolid, h.yearid
+  FROM q2i AS h INNER JOIN collegeplaying AS cp
+  ON h.playerid = cp.playerid
+  WHERE cp.schoolid IN (
+    SELECT schoolid FROM schools
+    WHERE schoolstate = 'CA'
+  )
+  ORDER BY h.yearid DESC, cp.schoolid, h.playerid
 ;
 
 -- Question 2iii
 CREATE VIEW q2iii(playerid, namefirst, namelast, schoolid)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  SELECT h.playerid, namefirst, namelast, schoolid
+  FROM q2i as h LEFT OUTER JOIN collegeplaying AS cp
+  ON h.playerid = cp.playerid
+  ORDER BY h.playerid DESC, cp.schoolid
 ;
 
 -- Question 3i
