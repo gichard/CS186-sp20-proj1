@@ -71,31 +71,63 @@ AS
 -- Question 3i
 CREATE VIEW q3i(playerid, namefirst, namelast, yearid, slg)
 AS
-  SELECT 1, 1, 1, 1, 1 -- replace this line
+  SELECT p.playerid, namefirst, namelast, yearid, (CAST(h + h2b + 2*h3b + 3*hr AS FLOAT) / CAST(ab AS FLOAT)) slg
+  FROM people AS p INNER JOIN batting AS b
+  ON p.playerid = b.playerid
+  WHERE ab > 50
+  ORDER BY slg DESC, yearid, p.playerid
+  LIMIT 10
 ;
 
 -- Question 3ii
 CREATE VIEW q3ii(playerid, namefirst, namelast, lslg)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  SELECT p.playerid, namefirst, namelast, (CAST(SUM(h) + SUM(h2b) + 2*SUM(h3b) + 3*SUM(hr) AS FLOAT) / CAST(SUM(ab) AS FLOAT)) lslg
+  FROM people AS p INNER JOIN batting AS b
+  ON p.playerid = b.playerid
+  GROUP BY p.playerid
+  HAVING SUM(ab) > 50
+  ORDER BY lslg DESC, playerid
+  LIMIT 10
 ;
 
 -- Question 3iii
 CREATE VIEW q3iii(namefirst, namelast, lslg)
 AS
-  SELECT 1, 1, 1 -- replace this line
+  SELECT namefirst, namelast, (CAST(SUM(h) + SUM(h2b) + 2*SUM(h3b) + 3*SUM(hr) AS FLOAT) / CAST(SUM(ab) AS FLOAT)) lslg
+  FROM people AS p INNER JOIN batting AS b
+  ON p.playerid = b.playerid
+  GROUP BY p.playerid
+  HAVING SUM(ab) > 50 AND 
+  (CAST(SUM(h) + SUM(h2b) + 2*SUM(h3b) + 3*SUM(hr) AS FLOAT) / CAST(SUM(ab) AS FLOAT)) > (
+    SELECT (CAST(SUM(h) + SUM(h2b) + 2*SUM(h3b) + 3*SUM(hr) AS FLOAT) / CAST(SUM(ab) AS FLOAT))
+    FROM batting
+    GROUP BY playerid
+    HAVING playerid = 'mayswi01'
+)
 ;
 
 -- Question 4i
 CREATE VIEW q4i(yearid, min, max, avg, stddev)
 AS
-  SELECT 1, 1, 1, 1, 1 -- replace this line
+  SELECT yearid, MIN(salary), MAX(salary), AVG(salary), STDDEV(salary)
+  FROM salaries
+  GROUP BY yearid
+  ORDER BY yearid
 ;
 
 -- Question 4ii
 CREATE VIEW q4ii(binid, low, high, count)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  SELECT bin, MIN(salary) + bin * (MAX(salary) - MIN(salary)) / 10,
+  MIN(salary) + (bin + 1) * (MAX(salary) - MIN(salary)) / 10, COUNT(*)
+  FROM (SELECT salary FROM salaries WHERE yearid = 2016
+    AND salary >= MIN(salary) + bin * (MAX(salary) - MIN(salary)) / 10
+    AND (salary < MIN(salary) + (bin + 1) * (MAX(salary) - MIN(salary)) / 10
+      OR bin = 9)) AS s
+  INNER JOIN (SELECT generate_series AS bin FROM generate_series(0, 9)) AS b
+  GROUP BY bin
+  ORDER BY bin
 ;
 
 -- Question 4iii
