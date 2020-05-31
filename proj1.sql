@@ -119,15 +119,15 @@ AS
 -- Question 4ii
 CREATE VIEW q4ii(binid, low, high, count)
 AS
-  SELECT bin, MIN(salary) + bin * (MAX(salary) - MIN(salary)) / 10,
-  MIN(salary) + (bin + 1) * (MAX(salary) - MIN(salary)) / 10, COUNT(*)
-  FROM (SELECT salary FROM salaries WHERE yearid = 2016
-    AND salary >= MIN(salary) + bin * (MAX(salary) - MIN(salary)) / 10
-    AND (salary < MIN(salary) + (bin + 1) * (MAX(salary) - MIN(salary)) / 10
-      OR bin = 9)) AS s
-  INNER JOIN (SELECT generate_series AS bin FROM generate_series(0, 9)) AS b
-  GROUP BY bin
-  ORDER BY bin
+  SELECT binid, MIN(low), MIN(high), COUNT(*)
+  FROM (SELECT salary FROM salaries WHERE yearid = 2016) AS s
+  INNER JOIN (SELECT (bin) binid, (min + bin * (max - min) / 10) low,
+    (min + (bin + 1) * (max - min) / 10) high
+    FROM (SELECT min, max FROM q4i WHERE yearid = 2016) AS smm
+    , (SELECT generate_series AS bin FROM generate_series(0, 9)) AS b) AS bucket
+  ON salary >= low AND (salary < high OR binid = 9)
+  GROUP BY binid
+  ORDER BY binid
 ;
 
 -- Question 4iii
